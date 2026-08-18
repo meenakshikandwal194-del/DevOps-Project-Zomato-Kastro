@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = "zomato"
-        DOCKER_IMAGE = "YOUR_DOCKERHUB_USERNAME/zomato:latest"
     }
 
     stages {
@@ -50,34 +49,39 @@ pipeline {
             }
         }
 
-       stage('Tag Docker Image') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'docker',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh '''
-                docker tag zomato ${DOCKER_USER}/zomato:latest
-            '''
+        stage('Tag Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        docker tag ${IMAGE_NAME} ${DOCKER_USER}/zomato:latest
+                    '''
+                }
+            }
         }
-    }
-}
 
-      stage('Push Image to DockerHub') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'docker',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh '''
-                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                docker push ${DOCKER_USER}/zomato:latest
-            '''
+        stage('Push Image to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                        -u "$DOCKER_USER" \
+                        --password-stdin
+
+                        docker push ${DOCKER_USER}/zomato:latest
+                    '''
+                }
+            }
         }
+
     }
-}
 
     post {
         success {
