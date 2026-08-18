@@ -50,13 +50,19 @@ pipeline {
             }
         }
 
-        stage('Tag Docker Image') {
-            steps {
-                sh '''
-                    docker tag ${IMAGE_NAME} ${DOCKER_IMAGE}
-                '''
-            }
+       stage('Tag Docker Image') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'docker',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+                docker tag zomato ${DOCKER_USER}/zomato:latest
+            '''
         }
+    }
+}
 
         stage('Push Image to DockerHub') {
             steps {
